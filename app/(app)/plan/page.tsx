@@ -4,22 +4,22 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import TripPlannerForm from "@/components/TripPlannerForm";
 import SuggestionCard from "@/components/SuggestionCard";
-import LoadingState from "@/components/LoadingState";
+import SuggestionSkeleton from "@/components/SuggestionSkeleton";
+import { useToast } from "@/components/Toast";
 import { createClient } from "@/lib/supabase/client";
 import type { TripFormValues, TripSuggestion } from "@/lib/trip-types";
 
 export default function PlanPage() {
+  const { toast } = useToast();
   const [formValues, setFormValues] = useState<TripFormValues | null>(null);
   const [suggestions, setSuggestions] = useState<TripSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set());
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
 
   async function generate(values: TripFormValues) {
     setFormValues(values);
     setLoading(true);
-    setError(null);
     setSuggestions([]);
     setSavedIndexes(new Set());
 
@@ -32,13 +32,14 @@ export default function PlanPage() {
       const body = await res.json();
 
       if (!res.ok) {
-        setError(body.error ?? "Something went wrong. Please try again.");
+        toast(body.error ?? "Something went wrong. Please try again.", "error");
         return;
       }
 
       setSuggestions(body.suggestions);
+      toast(`Found ${body.suggestions.length} trip ideas for you.`, "success");
     } catch {
-      setError("Could not reach the server. Please try again.");
+      toast("Could not reach the server. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -47,13 +48,12 @@ export default function PlanPage() {
   async function handleSave(suggestion: TripSuggestion, index: number) {
     if (!formValues) return;
     setSavingIndex(index);
-    setError(null);
 
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      setError("You must be logged in to save a trip.");
+      toast("You must be logged in to save a trip.", "error");
       setSavingIndex(null);
       return;
     }
@@ -83,11 +83,12 @@ export default function PlanPage() {
     setSavingIndex(null);
 
     if (insertError) {
-      setError(insertError.message);
+      toast(insertError.message, "error");
       return;
     }
 
     setSavedIndexes((prev) => new Set(prev).add(index));
+    toast(`${suggestion.destination} saved to your trips.`, "success");
   }
 
   return (
@@ -106,13 +107,16 @@ export default function PlanPage() {
         <TripPlannerForm onSubmit={generate} loading={loading} />
       </div>
 
-      {error && (
-        <p data-testid="form-error" className="mt-6 text-center text-sm text-red-600">
-          {error}
-        </p>
+      {loading && (
+        <div
+          data-testid="suggestions-loading"
+          className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {[0, 1, 2].map((i) => (
+            <SuggestionSkeleton key={i} />
+          ))}
+        </div>
       )}
-
-      {loading && <LoadingState message="Generating your trip ideas..." />}
 
       {!loading && suggestions.length > 0 && (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

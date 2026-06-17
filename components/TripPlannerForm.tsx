@@ -68,6 +68,8 @@ function Field({
   );
 }
 
+const TODAY = new Date().toISOString().split("T")[0];
+
 export default function TripPlannerForm({ onSubmit, loading }: Props) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -128,8 +130,12 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
           <input
             id="start-date"
             type="date"
+            min={TODAY}
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value);
+              if (endDate && endDate < e.target.value) setEndDate(e.target.value);
+            }}
             className={inputClass}
           />
         </Field>
@@ -138,6 +144,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
           <input
             id="end-date"
             type="date"
+            min={startDate || TODAY}
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             className={inputClass}

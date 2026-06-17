@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, ChevronDown, Sparkles, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Calendar, ChevronDown, Loader2, Sparkles, Trash2, Wallet } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/Toast";
 import type { ItineraryDay, TripCostBreakdown } from "@/lib/trip-types";
 
 export interface TripRow {
@@ -22,7 +25,27 @@ export interface TripRow {
 }
 
 export default function TripCard({ trip }: { trip: TripRow }) {
+  const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    setDeleting(true);
+    const supabase = createClient();
+    const { error } = await supabase.from("trips").delete().eq("id", trip.id);
+
+    if (error) {
+      toast(error.message, "error");
+      setDeleting(false);
+      setConfirming(false);
+      return;
+    }
+
+    toast(`${trip.destination} removed from your trips.`, "success");
+    router.refresh();
+  }
 
   return (
     <li className="rounded-2xl border border-white/60 bg-white/85 p-5 shadow-md backdrop-blur-sm transition hover:shadow-lg">
@@ -53,14 +76,46 @@ export default function TripCard({ trip }: { trip: TripRow }) {
             Saved {new Date(trip.created_at).toLocaleDateString()}
           </p>
         </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-1 whitespace-nowrap rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          View Details
-          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="flex items-center gap-1 whitespace-nowrap rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            View Details
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+          </button>
+          <button
+            aria-label="Delete trip"
+            onClick={() => setConfirming(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
+
+      {confirming && (
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between">
+          <span>Delete this trip? This can&apos;t be undone.</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={deleting}
+              className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {open && (
         <div className="mt-4 space-y-4 border-t border-gray-100 pt-4 text-sm text-gray-600">

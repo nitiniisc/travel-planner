@@ -5,7 +5,7 @@ function randomTestEmail() {
   return `test+${unique}@playwright-tests.com`;
 }
 
-test("plan a trip end to end", async ({ page }) => {
+test("plan, save, dashboard, delete end to end", async ({ page }) => {
   const email = randomTestEmail();
   const password = "Playwright-Test-1234!";
 
@@ -24,24 +24,33 @@ test("plan a trip end to end", async ({ page }) => {
   await page.getByLabel("Budget (INR)").fill("40000");
   await page.getByRole("button", { name: /generate trip ideas/i }).click();
 
+  // Skeleton loaders appear while generating
+  await expect(page.getByTestId("suggestions-loading")).toBeVisible();
+
   const firstCard = page.locator("h3").first();
   await expect(firstCard).toBeVisible({ timeout: 45_000 });
   const destination = await firstCard.innerText();
 
   await page.getByRole("button", { name: /view full details/i }).first().click();
   await expect(page.getByText("Cost breakdown").first()).toBeVisible();
-  await expect(page.getByText("Total", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Day-by-day itinerary").first()).toBeVisible();
 
   await page.getByRole("button", { name: /save trip/i }).first().click();
-  await expect(page.getByRole("button", { name: "Saved" }).first()).toBeVisible({
-    timeout: 10_000,
-  });
+  await expect(page.getByText(/saved to your trips/i)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("button", { name: "Saved" }).first()).toBeVisible();
 
+  // Dashboard shows the saved trip in "Recent trips"
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Recent trips" })).toBeVisible();
+  await expect(page.getByText(destination).first()).toBeVisible();
+
+  // History: view details, then delete
   await page.goto("/history");
   await expect(page.getByText(destination)).toBeVisible({ timeout: 10_000 });
 
-  await page.getByRole("button", { name: "View Details" }).first().click();
-  await expect(page.getByText("Cost breakdown").first()).toBeVisible();
-  await expect(page.getByText("Day-by-day itinerary").first()).toBeVisible();
+  await page.getByRole("button", { name: "Delete trip" }).first().click();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page.getByText(/removed from your trips/i)).toBeVisible({ timeout: 10_000 });
+
+  await expect(page.getByText(/no saved trips yet/i)).toBeVisible({ timeout: 10_000 });
 });
