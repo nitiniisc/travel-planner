@@ -32,12 +32,17 @@ export default function SuggestionCard({
     !!suggestion.costBreakdown || (suggestion.itinerary?.length ?? 0) > 0;
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
-      <div className="bg-gradient-to-br from-blue-600 via-teal-500 to-purple-500 px-5 py-6 text-white">
-        <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-white/80">
-          <Sparkles className="h-3.5 w-3.5" /> AI suggestion
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/60 bg-white/90 shadow-lg backdrop-blur-sm transition hover:-translate-y-1 hover:shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-teal-500 to-purple-500 px-5 py-6 text-white">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-8 -right-8 h-28 w-28 rounded-full bg-white/15 blur-xl" />
         </div>
-        <h3 className="mt-1 text-xl font-semibold">{suggestion.destination}</h3>
+        <div className="relative">
+          <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-white/80">
+            <Sparkles className="h-3.5 w-3.5" /> AI suggestion
+          </div>
+          <h3 className="mt-1 text-xl font-semibold">{suggestion.destination}</h3>
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-5">

@@ -17,21 +17,25 @@ export default function AppHeader({ email }: { email: string }) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-white/60 bg-white/70 shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-gray-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-500 text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-teal-500 text-white shadow-md">
             <Plane className="h-4 w-4" />
           </span>
           TripWise AI
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
+        <nav className="hidden items-center gap-1 text-sm font-medium text-gray-600 md:flex">
           {LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={pathname === link.href ? "text-gray-900" : "hover:text-gray-900"}
+              className={`rounded-full px-3 py-1.5 transition ${
+                pathname === link.href
+                  ? "bg-blue-50 text-blue-700"
+                  : "hover:bg-gray-100 hover:text-gray-900"
+              }`}
             >
               {link.label}
             </Link>

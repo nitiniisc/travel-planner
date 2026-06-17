@@ -13,15 +13,15 @@ export default function EmptyState({
   ctaLabel: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white/60 px-6 py-16 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-        <Compass className="h-6 w-6" />
+    <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-gray-300 bg-white/70 px-6 py-16 text-center shadow-sm backdrop-blur-sm">
+      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-teal-500 text-white shadow-md">
+        <Compass className="h-7 w-7" />
       </span>
       <p className="font-medium text-gray-900">{title}</p>
       <p className="max-w-sm text-sm text-gray-500">{description}</p>
       <Link
         href={ctaHref}
-        className="mt-2 rounded-full bg-black px-5 py-2 text-sm font-medium text-white hover:bg-gray-800"
+        className="mt-2 rounded-full bg-gradient-to-r from-blue-600 to-teal-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
       >
         {ctaLabel}
       </Link>

@@ -25,7 +25,7 @@ export default function TripCard({ trip }: { trip: TripRow }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <li className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+    <li className="rounded-2xl border border-white/60 bg-white/85 p-5 shadow-md backdrop-blur-sm transition hover:shadow-lg">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-lg font-semibold text-gray-900">{trip.destination}</p>

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { CheckCircle2, Lock, Mail, Plane } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import BackgroundBlobs from "@/components/BackgroundBlobs";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -38,56 +40,79 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <h1 className="text-2xl font-semibold text-center">Create an account</h1>
+    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-b from-blue-50 via-white to-white px-4 py-12">
+      <BackgroundBlobs />
+
+      <div className="w-full max-w-sm rounded-3xl border border-white/60 bg-white/70 p-8 shadow-2xl backdrop-blur-xl">
+        <div className="mb-6 flex flex-col items-center gap-2 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-teal-500 text-white shadow-lg">
+            <Plane className="h-6 w-6" />
+          </span>
+          <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
+          <p className="text-sm text-gray-500">Start planning AI-powered trips</p>
+        </div>
 
         {success ? (
-          <p data-testid="signup-success" className="text-sm text-center text-gray-600">
-            Check your email to confirm your account before signing in.
-          </p>
+          <div
+            data-testid="signup-success"
+            className="flex flex-col items-center gap-2 rounded-2xl bg-green-50 px-4 py-6 text-center"
+          >
+            <CheckCircle2 className="h-8 w-8 text-green-600" />
+            <p className="text-sm text-gray-700">
+              Check your email to confirm your account before signing in.
+            </p>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
-              />
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 bg-white/80 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
-              />
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 bg-white/80 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="confirm-password" className="text-sm font-medium">
+              <label htmlFor="confirm-password" className="text-sm font-medium text-gray-700">
                 Confirm password
               </label>
-              <input
-                id="confirm-password"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
-              />
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  id="confirm-password"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-xl border border-gray-300 bg-white/80 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             {error && (
@@ -99,16 +124,16 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+              className="w-full rounded-full bg-gradient-to-r from-blue-600 to-teal-500 px-3 py-2.5 text-sm font-semibold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Signing up..." : "Sign up"}
             </button>
           </form>
         )}
 
-        <p className="text-sm text-center text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-black underline">
+          <Link href="/login" className="font-medium text-blue-700 hover:underline">
             Log in
           </Link>
         </p>

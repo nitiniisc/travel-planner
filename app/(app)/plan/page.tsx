@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import TripPlannerForm from "@/components/TripPlannerForm";
 import SuggestionCard from "@/components/SuggestionCard";
 import LoadingState from "@/components/LoadingState";
@@ -91,8 +92,11 @@ export default function PlanPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-12 sm:px-6">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Plan a trip</h1>
+      <div className="mb-8 flex flex-col items-center text-center">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-teal-500 text-white shadow-lg">
+          <Sparkles className="h-6 w-6" />
+        </span>
+        <h1 className="mt-3 text-2xl font-bold text-gray-900 sm:text-3xl">Plan a trip</h1>
         <p className="mt-2 text-sm text-gray-500">
           Tell us a bit about your trip and we&apos;ll suggest where to go.
         </p>

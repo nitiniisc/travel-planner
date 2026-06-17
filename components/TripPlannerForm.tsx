@@ -117,7 +117,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
+      className="space-y-6 rounded-3xl border border-white/60 bg-white/80 p-6 shadow-xl backdrop-blur-sm sm:p-8"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="start-date" label="Start date" icon={<Calendar className="h-4 w-4" />} error={errors.startDate}>
@@ -233,7 +233,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-full bg-gradient-to-r from-blue-600 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-full bg-gradient-to-r from-blue-600 to-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:opacity-50"
       >
         {loading ? "Generating your trip ideas..." : "Generate trip ideas"}
       </button>
