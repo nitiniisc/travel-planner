@@ -3,7 +3,8 @@ import { test, expect } from "@playwright/test";
 const TEST_PASSWORD = "Playwright-Test-1234!";
 
 function randomTestEmail() {
-  return `test+${Date.now()}@playwright-tests.com`;
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `test+${unique}@playwright-tests.com`;
 }
 
 test.describe("authentication", () => {
