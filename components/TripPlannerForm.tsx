@@ -20,6 +20,8 @@ import {
   type Vibe,
 } from "@/lib/trip-types";
 import CityAutocomplete from "@/components/CityAutocomplete";
+import SegmentedControl from "@/components/SegmentedControl";
+import NumberStepper from "@/components/NumberStepper";
 
 interface Props {
   onSubmit: (values: TripFormValues) => void;
@@ -27,7 +29,9 @@ interface Props {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500";
+  "w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm outline-none transition focus:border-blue-500 focus:shadow-md focus:ring-2 focus:ring-blue-500/30";
+
+const BUDGET_PRESETS = [15000, 25000, 40000, 60000, 100000];
 
 function Field({
   id,
@@ -67,7 +71,7 @@ function Field({
 export default function TripPlannerForm({ onSubmit, loading }: Props) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [travelers, setTravelers] = useState("2");
+  const [travelers, setTravelers] = useState(2);
   const [groupType, setGroupType] = useState<GroupType>("Couple");
   const [vibe, setVibe] = useState<Vibe>("Relaxing");
   const [terrain, setTerrain] = useState<Terrain>("Any");
@@ -83,7 +87,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
     if (startDate && endDate && endDate < startDate) {
       e.endDate = "End date must be on or after the start date.";
     }
-    if (!travelers || Number(travelers) < 1) {
+    if (!travelers || travelers < 1) {
       e.travelers = "At least 1 traveler.";
     }
     if (!budget || Number(budget) <= 0) {
@@ -104,7 +108,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
     onSubmit({
       startDate,
       endDate,
-      travelers: Number(travelers),
+      travelers,
       groupType,
       vibe,
       terrain,
@@ -141,14 +145,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
         </Field>
 
         <Field id="travelers" label="Number of travelers" icon={<Users className="h-4 w-4" />} error={errors.travelers}>
-          <input
-            id="travelers"
-            type="number"
-            min={1}
-            value={travelers}
-            onChange={(e) => setTravelers(e.target.value)}
-            className={inputClass}
-          />
+          <NumberStepper id="travelers" value={travelers} onChange={setTravelers} min={1} max={20} />
         </Field>
 
         <Field id="starting-city" label="Starting city" icon={<MapPin className="h-4 w-4" />} error={errors.startingCity}>
@@ -160,64 +157,57 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
             className={inputClass}
           />
         </Field>
-
-        <Field id="group-type" label="Group type" icon={<Heart className="h-4 w-4" />}>
-          <select
-            id="group-type"
-            value={groupType}
-            onChange={(e) => setGroupType(e.target.value as GroupType)}
-            className={inputClass}
-          >
-            {GROUP_TYPES.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field id="vibe" label="Travel vibe" icon={<Sparkles className="h-4 w-4" />}>
-          <select
-            id="vibe"
-            value={vibe}
-            onChange={(e) => setVibe(e.target.value as Vibe)}
-            className={inputClass}
-          >
-            {VIBES.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field id="terrain" label="Terrain preference" icon={<Mountain className="h-4 w-4" />}>
-          <select
-            id="terrain"
-            value={terrain}
-            onChange={(e) => setTerrain(e.target.value as Terrain)}
-            className={inputClass}
-          >
-            {TERRAINS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field id="budget" label="Budget (INR)" icon={<Wallet className="h-4 w-4" />} error={errors.budget}>
-          <input
-            id="budget"
-            type="number"
-            min={0}
-            placeholder="e.g. 40000"
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
       </div>
+
+      <Field id="group-type" label="Group type" icon={<Heart className="h-4 w-4" />}>
+        <SegmentedControl
+          ariaLabel="Group type"
+          options={GROUP_TYPES}
+          value={groupType}
+          onChange={setGroupType}
+        />
+      </Field>
+
+      <Field id="vibe" label="Travel vibe" icon={<Sparkles className="h-4 w-4" />}>
+        <SegmentedControl ariaLabel="Travel vibe" options={VIBES} value={vibe} onChange={setVibe} />
+      </Field>
+
+      <Field id="terrain" label="Terrain preference" icon={<Mountain className="h-4 w-4" />}>
+        <SegmentedControl
+          ariaLabel="Terrain preference"
+          options={TERRAINS}
+          value={terrain}
+          onChange={setTerrain}
+        />
+      </Field>
+
+      <Field id="budget" label="Budget (INR)" icon={<Wallet className="h-4 w-4" />} error={errors.budget}>
+        <input
+          id="budget"
+          type="number"
+          min={0}
+          placeholder="e.g. 40000"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          className={inputClass}
+        />
+        <div className="mt-2 flex flex-wrap gap-2">
+          {BUDGET_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => setBudget(String(preset))}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                budget === String(preset)
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "border border-gray-300 bg-white text-gray-600 hover:border-blue-300 hover:bg-blue-50"
+              }`}
+            >
+              ₹{preset.toLocaleString("en-IN")}
+            </button>
+          ))}
+        </div>
+      </Field>
 
       <Field id="notes" label="Anything specific you want?" helper="Optional">
         <textarea

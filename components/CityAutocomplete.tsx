@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type FocusEvent } from "react";
+import { MapPin } from "lucide-react";
 import { INDIAN_CITIES } from "@/lib/indian-cities";
 
 interface Props {
@@ -50,7 +51,7 @@ export default function CityAutocomplete({
         className={className}
       />
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+        <ul className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
           {suggestions.map((city) => (
             <li key={city}>
               <button
@@ -59,8 +60,9 @@ export default function CityAutocomplete({
                   onChange(city);
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition hover:bg-blue-50 hover:text-blue-700"
               >
+                <MapPin className="h-3.5 w-3.5 text-gray-400" />
                 {city}
               </button>
             </li>
