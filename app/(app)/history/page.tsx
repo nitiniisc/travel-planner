@@ -8,7 +8,7 @@ export default async function HistoryPage() {
   const { data: trips } = await supabase
     .from("trips")
     .select(
-      "id, destination, start_date, end_date, notes, vibe, budget_inr, estimated_budget, reason, highlights, tags, created_at"
+      "id, destination, start_date, end_date, notes, vibe, budget_inr, estimated_budget, reason, highlights, tags, cost_breakdown, itinerary, created_at"
     )
     .order("created_at", { ascending: false });
 

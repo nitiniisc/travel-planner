@@ -38,6 +38,20 @@ export interface TripFormValues {
   notes?: string;
 }
 
+export interface TripCostBreakdown {
+  transport: string;
+  accommodation: string;
+  food: string;
+  activities: string;
+  total: string;
+}
+
+export interface ItineraryDay {
+  day: number;
+  title: string;
+  activities: string[];
+}
+
 export interface TripSuggestion {
   destination: string;
   reason: string;
@@ -46,4 +60,6 @@ export interface TripSuggestion {
   duration: string;
   tags: string[];
   highlights: string[];
+  costBreakdown?: TripCostBreakdown;
+  itinerary?: ItineraryDay[];
 }

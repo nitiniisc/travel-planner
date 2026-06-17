@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Calendar, ChevronDown, Sparkles, Wallet } from "lucide-react";
+import type { ItineraryDay, TripCostBreakdown } from "@/lib/trip-types";
 
 export interface TripRow {
   id: string;
@@ -15,6 +16,8 @@ export interface TripRow {
   reason: string | null;
   highlights: string[] | null;
   tags: string[] | null;
+  cost_breakdown: TripCostBreakdown | null;
+  itinerary: ItineraryDay[] | null;
   created_at: string;
 }
 
@@ -60,7 +63,7 @@ export default function TripCard({ trip }: { trip: TripRow }) {
       </div>
 
       {open && (
-        <div className="mt-4 space-y-3 border-t border-gray-100 pt-4 text-sm text-gray-600">
+        <div className="mt-4 space-y-4 border-t border-gray-100 pt-4 text-sm text-gray-600">
           {trip.reason && <p>{trip.reason}</p>}
           {trip.notes && <p className="italic text-gray-500">&ldquo;{trip.notes}&rdquo;</p>}
           {trip.tags && trip.tags.length > 0 && (
@@ -81,6 +84,58 @@ export default function TripCard({ trip }: { trip: TripRow }) {
                 <li key={highlight}>{highlight}</li>
               ))}
             </ul>
+          )}
+
+          {trip.cost_breakdown && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Cost breakdown
+              </p>
+              <dl className="grid grid-cols-2 gap-2 rounded-xl bg-gray-50 p-3">
+                <div className="flex justify-between gap-2">
+                  <dt>Transport</dt>
+                  <dd className="font-medium">{trip.cost_breakdown.transport}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt>Stay</dt>
+                  <dd className="font-medium">{trip.cost_breakdown.accommodation}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt>Food</dt>
+                  <dd className="font-medium">{trip.cost_breakdown.food}</dd>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <dt>Activities</dt>
+                  <dd className="font-medium">{trip.cost_breakdown.activities}</dd>
+                </div>
+                <div className="col-span-2 flex justify-between gap-2 border-t border-gray-200 pt-2">
+                  <dt className="font-semibold text-gray-900">Total</dt>
+                  <dd className="font-semibold text-gray-900">{trip.cost_breakdown.total}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
+
+          {trip.itinerary && trip.itinerary.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Day-by-day itinerary
+              </p>
+              <ol className="space-y-2">
+                {trip.itinerary.map((day) => (
+                  <li key={day.day}>
+                    <p className="font-medium text-gray-800">
+                      Day {day.day}: {day.title}
+                    </p>
+                    <ul className="ml-4 list-disc text-gray-600">
+                      {day.activities.map((activity) => (
+                        <li key={activity}>{activity}</li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+            </div>
           )}
         </div>
       )}

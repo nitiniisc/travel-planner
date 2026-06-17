@@ -19,6 +19,7 @@ import {
   type TripFormValues,
   type Vibe,
 } from "@/lib/trip-types";
+import CityAutocomplete from "@/components/CityAutocomplete";
 
 interface Props {
   onSubmit: (values: TripFormValues) => void;
@@ -151,12 +152,11 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
         </Field>
 
         <Field id="starting-city" label="Starting city" icon={<MapPin className="h-4 w-4" />} error={errors.startingCity}>
-          <input
+          <CityAutocomplete
             id="starting-city"
-            type="text"
             placeholder="e.g. Bengaluru"
             value={startingCity}
-            onChange={(e) => setStartingCity(e.target.value)}
+            onChange={setStartingCity}
             className={inputClass}
           />
         </Field>

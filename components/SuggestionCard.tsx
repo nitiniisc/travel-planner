@@ -1,4 +1,15 @@
-import { Calendar, Clock, MapPin, RefreshCw, Sparkles, Wallet } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import {
+  Calendar,
+  ChevronDown,
+  Clock,
+  MapPin,
+  RefreshCw,
+  Sparkles,
+  Wallet,
+} from "lucide-react";
 import type { TripSuggestion } from "@/lib/trip-types";
 
 interface Props {
@@ -16,6 +27,10 @@ export default function SuggestionCard({
   saving,
   saved,
 }: Props) {
+  const [open, setOpen] = useState(false);
+  const hasDetails =
+    !!suggestion.costBreakdown || (suggestion.itinerary?.length ?? 0) > 0;
+
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
       <div className="bg-gradient-to-br from-blue-600 via-teal-500 to-purple-500 px-5 py-6 text-white">
@@ -59,6 +74,79 @@ export default function SuggestionCard({
             </li>
           ))}
         </ul>
+
+        {hasDetails && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              className="flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
+            >
+              View full details &amp; expenses
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {open && (
+              <div className="mt-3 space-y-4 rounded-xl bg-gray-50 p-4 text-sm">
+                {suggestion.costBreakdown && (
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Cost breakdown
+                    </p>
+                    <dl className="grid grid-cols-2 gap-2 text-gray-600">
+                      <div className="flex justify-between gap-2">
+                        <dt>Transport</dt>
+                        <dd className="font-medium">{suggestion.costBreakdown.transport}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Stay</dt>
+                        <dd className="font-medium">{suggestion.costBreakdown.accommodation}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Food</dt>
+                        <dd className="font-medium">{suggestion.costBreakdown.food}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Activities</dt>
+                        <dd className="font-medium">{suggestion.costBreakdown.activities}</dd>
+                      </div>
+                      <div className="col-span-2 flex justify-between gap-2 border-t border-gray-200 pt-2">
+                        <dt className="font-semibold text-gray-900">Total</dt>
+                        <dd className="font-semibold text-gray-900">
+                          {suggestion.costBreakdown.total}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
+
+                {suggestion.itinerary && suggestion.itinerary.length > 0 && (
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      Day-by-day itinerary
+                    </p>
+                    <ol className="space-y-2">
+                      {suggestion.itinerary.map((day) => (
+                        <li key={day.day}>
+                          <p className="font-medium text-gray-800">
+                            Day {day.day}: {day.title}
+                          </p>
+                          <ul className="ml-4 list-disc text-gray-600">
+                            {day.activities.map((activity) => (
+                              <li key={activity}>{activity}</li>
+                            ))}
+                          </ul>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-auto flex gap-2 pt-2">
           <button

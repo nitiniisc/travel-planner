@@ -1,4 +1,9 @@
-import type { TripFormValues, TripSuggestion } from "@/lib/trip-types";
+import type {
+  ItineraryDay,
+  TripCostBreakdown,
+  TripFormValues,
+  TripSuggestion,
+} from "@/lib/trip-types";
 
 export const SYSTEM_PROMPT = "You are an expert Indian travel planner.";
 
@@ -30,6 +35,8 @@ Rules:
 * Match the destination to the group type, vibe, terrain, dates, and budget.
 * Do not suggest unsafe or unrealistic trips.
 * Give clear, useful, non-generic recommendations.
+* Include a realistic cost breakdown (transport, accommodation, food, activities, total) that adds up close to the total budget.
+* Include a day-by-day itinerary matching the trip duration.
 * Return only valid JSON.
 * Do not include markdown.
 * Do not include explanations outside JSON.
@@ -45,7 +52,21 @@ JSON format:
 "estimatedBudget": "string",
 "duration": "string",
 "tags": ["string"],
-"highlights": ["string"]
+"highlights": ["string"],
+"costBreakdown": {
+"transport": "string",
+"accommodation": "string",
+"food": "string",
+"activities": "string",
+"total": "string"
+},
+"itinerary": [
+{
+"day": 1,
+"title": "string",
+"activities": ["string"]
+}
+]
 }
 ]
 }`;
@@ -222,12 +243,11 @@ const MOCK_DESTINATIONS_BY_TERRAIN: Record<string, MockDestination[]> = {
 
 const ALL_MOCK_DESTINATIONS = Object.values(MOCK_DESTINATIONS_BY_TERRAIN).flat();
 
-function estimateDuration(startDate: string, endDate: string): string {
+function dayCount(startDate: string, endDate: string): number {
   const start = new Date(startDate);
   const end = new Date(endDate);
   const days = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
-  if (!Number.isFinite(days) || days <= 0) return "4 days";
-  return `${days} day${days === 1 ? "" : "s"}`;
+  return Number.isFinite(days) && days > 0 ? days : 4;
 }
 
 function estimateBudgetRange(budget: number): string {
@@ -236,13 +256,57 @@ function estimateBudgetRange(budget: number): string {
   return `₹${low.toLocaleString("en-IN")} - ₹${high.toLocaleString("en-IN")}`;
 }
 
+function formatINR(amount: number): string {
+  return `₹${Math.round(amount).toLocaleString("en-IN")}`;
+}
+
+function buildMockCostBreakdown(budget: number): TripCostBreakdown {
+  const transport = budget * 0.3;
+  const accommodation = budget * 0.35;
+  const food = budget * 0.2;
+  const activities = budget * 0.15;
+
+  return {
+    transport: formatINR(transport),
+    accommodation: formatINR(accommodation),
+    food: formatINR(food),
+    activities: formatINR(activities),
+    total: formatINR(transport + accommodation + food + activities),
+  };
+}
+
+function buildMockItinerary(
+  destination: string,
+  highlights: string[],
+  days: number
+): ItineraryDay[] {
+  const clampedDays = Math.min(Math.max(days, 1), 7);
+
+  return Array.from({ length: clampedDays }, (_, i) => {
+    const day = i + 1;
+    const isFirst = day === 1;
+    const isLast = day === clampedDays && clampedDays > 1;
+    const title = isFirst
+      ? `Arrive in ${destination}`
+      : isLast
+        ? "Departure"
+        : `Explore ${destination}`;
+    const activities = highlights.length
+      ? [highlights[(day - 1) % highlights.length]]
+      : [`Free day to explore ${destination}`];
+
+    return { day, title, activities };
+  });
+}
+
 export function generateMockSuggestions(input: TripFormValues): TripSuggestion[] {
   const pool =
     input.terrain === "Any"
       ? ALL_MOCK_DESTINATIONS
       : MOCK_DESTINATIONS_BY_TERRAIN[input.terrain] ?? ALL_MOCK_DESTINATIONS;
 
-  const duration = estimateDuration(input.startDate, input.endDate);
+  const days = dayCount(input.startDate, input.endDate);
+  const duration = `${days} day${days === 1 ? "" : "s"}`;
   const estimatedBudget = estimateBudgetRange(input.budget);
 
   return pool.slice(0, 3).map((dest) => ({
@@ -253,5 +317,7 @@ export function generateMockSuggestions(input: TripFormValues): TripSuggestion[]
     duration,
     tags: [input.vibe, input.terrain === "Any" ? "Versatile" : input.terrain],
     highlights: dest.highlights,
+    costBreakdown: buildMockCostBreakdown(input.budget),
+    itinerary: buildMockItinerary(dest.destination, dest.highlights, days),
   }));
 }

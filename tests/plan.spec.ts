@@ -25,8 +25,13 @@ test("plan a trip end to end", async ({ page }) => {
   await page.getByRole("button", { name: /generate trip ideas/i }).click();
 
   const firstCard = page.locator("h3").first();
-  await expect(firstCard).toBeVisible({ timeout: 10_000 });
+  await expect(firstCard).toBeVisible({ timeout: 45_000 });
   const destination = await firstCard.innerText();
+
+  await page.getByRole("button", { name: /view full details/i }).first().click();
+  await expect(page.getByText("Cost breakdown").first()).toBeVisible();
+  await expect(page.getByText("Total", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Day-by-day itinerary").first()).toBeVisible();
 
   await page.getByRole("button", { name: /save trip/i }).first().click();
   await expect(page.getByRole("button", { name: "Saved" }).first()).toBeVisible({
@@ -35,4 +40,8 @@ test("plan a trip end to end", async ({ page }) => {
 
   await page.goto("/history");
   await expect(page.getByText(destination)).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole("button", { name: "View Details" }).first().click();
+  await expect(page.getByText("Cost breakdown").first()).toBeVisible();
+  await expect(page.getByText("Day-by-day itinerary").first()).toBeVisible();
 });

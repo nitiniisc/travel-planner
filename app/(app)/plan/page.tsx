@@ -75,6 +75,8 @@ export default function PlanPage() {
       duration: suggestion.duration,
       tags: suggestion.tags,
       highlights: suggestion.highlights,
+      cost_breakdown: suggestion.costBreakdown ?? null,
+      itinerary: suggestion.itinerary ?? null,
     });
 
     setSavingIndex(null);
