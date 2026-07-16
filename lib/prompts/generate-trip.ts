@@ -1,4 +1,5 @@
 import type {
+  CostBreakdownLinks,
   ItineraryDay,
   TripCostBreakdown,
   TripFormValues,
@@ -36,7 +37,8 @@ Rules:
 * Do not suggest unsafe or unrealistic trips.
 * Give clear, useful, non-generic recommendations.
 * Include a realistic cost breakdown (transport, accommodation, food, activities, total) that adds up close to the total budget.
-* Include a day-by-day itinerary matching the trip duration.
+* Include real booking/search links (costBreakdown.links) the user can open to verify the estimate against live prices — e.g. a flight/train search from the starting city, a hotel search for the destination and dates, a restaurants search, and an activities/tours search. Use real booking sites (Google Flights, Booking.com, Google Maps, GetYourGuide, MakeMyTrip, etc.) with the destination, dates and traveler count filled into the URL.
+* Include a day-by-day itinerary matching the trip duration. Every day must be distinct: do NOT repeat the same place or activity on multiple days. Give each day a specific title and 2-3 concrete activities (ideally morning / afternoon / evening).
 * Return only valid JSON.
 * Do not include markdown.
 * Do not include explanations outside JSON.
@@ -58,7 +60,13 @@ JSON format:
 "accommodation": "string",
 "food": "string",
 "activities": "string",
-"total": "string"
+"total": "string",
+"links": {
+"transport": "https://...",
+"accommodation": "https://...",
+"food": "https://...",
+"activities": "https://..."
+}
 },
 "itinerary": [
 {
@@ -260,7 +268,34 @@ function formatINR(amount: number): string {
   return `₹${Math.round(amount).toLocaleString("en-IN")}`;
 }
 
-function buildMockCostBreakdown(budget: number): TripCostBreakdown {
+// Build real, working search links per cost category so the user can open
+// them and check the estimate against live prices. Booking.com takes the
+// exact dates and guest count; the others are reliable destination searches.
+function buildBookingLinks(
+  input: TripFormValues,
+  destination: string
+): CostBreakdownLinks {
+  const dest = encodeURIComponent(destination);
+  const origin = encodeURIComponent(input.startingCity);
+  const adults = Math.max(1, input.travelers);
+
+  return {
+    transport: `https://www.google.com/travel/flights?q=${encodeURIComponent(
+      `flights from ${input.startingCity} to ${destination} on ${input.startDate}`
+    )}`,
+    accommodation: `https://www.booking.com/searchresults.html?ss=${dest}&checkin=${input.startDate}&checkout=${input.endDate}&group_adults=${adults}`,
+    food: `https://www.google.com/maps/search/${encodeURIComponent(
+      `best restaurants in ${destination}`
+    )}`,
+    activities: `https://www.getyourguide.com/s/?q=${dest}&searchSource=all`,
+  };
+}
+
+function buildMockCostBreakdown(
+  input: TripFormValues,
+  destination: string
+): TripCostBreakdown {
+  const budget = input.budget;
   const transport = budget * 0.3;
   const accommodation = budget * 0.35;
   const food = budget * 0.2;
@@ -272,30 +307,108 @@ function buildMockCostBreakdown(budget: number): TripCostBreakdown {
     food: formatINR(food),
     activities: formatINR(activities),
     total: formatINR(transport + accommodation + food + activities),
+    links: buildBookingLinks(input, destination),
   };
+}
+
+// Varied filler content so longer trips never repeat a day. Indexed by day so
+// each day pulls a different theme/afternoon/evening.
+const FILLER_THEMES = [
+  "Local markets & cafes",
+  "Hidden gems & viewpoints",
+  "Leisure & short day trip",
+  "Culture & local life",
+  "Nature & slow morning",
+  "Food trail & shopping",
+];
+
+const AFTERNOON_OPTIONS = [
+  "Explore nearby markets and local cafes",
+  "Relax and soak in the scenery at your own pace",
+  "Take an optional guided tour of a nearby spot",
+  "Wander the lanes and pick up local handicrafts",
+  "Short day trip to a nearby attraction",
+  "Unwind with a spa session or a lazy afternoon",
+];
+
+const EVENING_OPTIONS = [
+  "Dinner at a highly-rated local restaurant",
+  "Catch the sunset at a scenic viewpoint",
+  "Stroll the main promenade and try street food",
+  "Enjoy a cultural show or live music",
+  "Cafe-hopping and people-watching",
+  "Quiet evening walk and local dessert",
+];
+
+function pick<T>(arr: T[], i: number): T {
+  return arr[i % arr.length];
 }
 
 function buildMockItinerary(
   destination: string,
   highlights: string[],
+  input: TripFormValues,
   days: number
 ): ItineraryDay[] {
-  const clampedDays = Math.min(Math.max(days, 1), 7);
+  const clampedDays = Math.min(Math.max(days, 1), 10);
 
+  if (clampedDays === 1) {
+    return [
+      {
+        day: 1,
+        title: `A day in ${destination}`,
+        activities: [
+          `Morning: Arrive in ${destination} from ${input.startingCity} and freshen up`,
+          `Afternoon: ${highlights[0] ?? `Explore the heart of ${destination}`}`,
+          `Evening: ${pick(EVENING_OPTIONS, 0)}`,
+        ],
+      },
+    ];
+  }
+
+  // Middle days each get a distinct highlight as the anchor; once highlights
+  // run out we fall back to varied themed days so nothing repeats.
   return Array.from({ length: clampedDays }, (_, i) => {
     const day = i + 1;
     const isFirst = day === 1;
-    const isLast = day === clampedDays && clampedDays > 1;
-    const title = isFirst
-      ? `Arrive in ${destination}`
-      : isLast
-        ? "Departure"
-        : `Explore ${destination}`;
-    const activities = highlights.length
-      ? [highlights[(day - 1) % highlights.length]]
-      : [`Free day to explore ${destination}`];
+    const isLast = day === clampedDays;
 
-    return { day, title, activities };
+    if (isFirst) {
+      return {
+        day,
+        title: `Arrive in ${destination}`,
+        activities: [
+          `Morning: Travel from ${input.startingCity} to ${destination}`,
+          "Afternoon: Check in, settle down and get oriented",
+          `Evening: ${pick(EVENING_OPTIONS, 0)}`,
+        ],
+      };
+    }
+
+    if (isLast) {
+      return {
+        day,
+        title: "Departure",
+        activities: [
+          "Morning: Relaxed breakfast and last-minute local shopping",
+          `Afternoon: Check out and travel back to ${input.startingCity}`,
+        ],
+      };
+    }
+
+    // middleIndex counts explorable days (day 2 => 0, day 3 => 1, ...)
+    const middleIndex = day - 2;
+    const anchor = highlights[middleIndex];
+
+    return {
+      day,
+      title: anchor ?? pick(FILLER_THEMES, middleIndex - highlights.length),
+      activities: [
+        `Morning: ${anchor ?? pick(AFTERNOON_OPTIONS, middleIndex)}`,
+        `Afternoon: ${pick(AFTERNOON_OPTIONS, middleIndex + 1)}`,
+        `Evening: ${pick(EVENING_OPTIONS, middleIndex + 1)}`,
+      ],
+    };
   });
 }
 
@@ -317,7 +430,7 @@ export function generateMockSuggestions(input: TripFormValues): TripSuggestion[]
     duration,
     tags: [input.vibe, input.terrain === "Any" ? "Versatile" : input.terrain],
     highlights: dest.highlights,
-    costBreakdown: buildMockCostBreakdown(input.budget),
-    itinerary: buildMockItinerary(dest.destination, dest.highlights, days),
+    costBreakdown: buildMockCostBreakdown(input, dest.destination),
+    itinerary: buildMockItinerary(dest.destination, dest.highlights, input, days),
   }));
 }

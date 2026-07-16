@@ -38,12 +38,21 @@ export interface TripFormValues {
   notes?: string;
 }
 
+export interface CostBreakdownLinks {
+  transport?: string;
+  accommodation?: string;
+  food?: string;
+  activities?: string;
+}
+
 export interface TripCostBreakdown {
   transport: string;
   accommodation: string;
   food: string;
   activities: string;
   total: string;
+  // Real booking/search links so the estimate can be verified against live prices.
+  links?: CostBreakdownLinks;
 }
 
 export interface ItineraryDay {

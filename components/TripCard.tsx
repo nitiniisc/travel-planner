@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Calendar, ChevronDown, Loader2, Sparkles, Trash2, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/Toast";
+import CostBreakdownLinks from "@/components/CostBreakdownLinks";
 import type { ItineraryDay, TripCostBreakdown } from "@/lib/trip-types";
 
 export interface TripRow {
@@ -167,6 +168,7 @@ export default function TripCard({ trip }: { trip: TripRow }) {
                   <dt className="font-semibold text-gray-900">Total</dt>
                   <dd className="font-semibold text-gray-900">{trip.cost_breakdown.total}</dd>
                 </div>
+                <CostBreakdownLinks links={trip.cost_breakdown.links} />
               </dl>
             </div>
           )}

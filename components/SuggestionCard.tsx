@@ -11,6 +11,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { TripSuggestion } from "@/lib/trip-types";
+import CostBreakdownLinks from "@/components/CostBreakdownLinks";
 
 interface Props {
   suggestion: TripSuggestion;
@@ -123,6 +124,7 @@ export default function SuggestionCard({
                           {suggestion.costBreakdown.total}
                         </dd>
                       </div>
+                      <CostBreakdownLinks links={suggestion.costBreakdown.links} />
                     </dl>
                   </div>
                 )}
