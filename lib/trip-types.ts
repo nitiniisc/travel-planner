@@ -35,6 +35,9 @@ export interface TripFormValues {
   terrain: Terrain;
   budget: number;
   startingCity: string;
+  // Optional destination the user already has in mind; when set,
+  // suggestions are biased toward it.
+  destination?: string;
   notes?: string;
 }
 

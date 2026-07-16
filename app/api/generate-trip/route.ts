@@ -17,6 +17,7 @@ function validate(body: Record<string, unknown>): TripFormValues | null {
     terrain,
     budget,
     startingCity,
+    destination,
     notes,
   } = body;
 
@@ -30,6 +31,7 @@ function validate(body: Record<string, unknown>): TripFormValues | null {
     return null;
   if (typeof budget !== "number" || budget <= 0) return null;
   if (typeof startingCity !== "string" || !startingCity.trim()) return null;
+  if (destination !== undefined && typeof destination !== "string") return null;
   if (notes !== undefined && typeof notes !== "string") return null;
 
   return {
@@ -41,6 +43,7 @@ function validate(body: Record<string, unknown>): TripFormValues | null {
     terrain: terrain as TripFormValues["terrain"],
     budget,
     startingCity,
+    destination: (destination as string | undefined)?.trim() || undefined,
     notes: notes as string | undefined,
   };
 }

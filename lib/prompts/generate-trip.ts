@@ -24,12 +24,14 @@ User input:
 * Terrain preference: ${input.terrain}
 * Budget in INR: ${input.budget}
 * Starting city: ${input.startingCity}
+* Preferred destination: ${input.destination || "None (suggest the best options)"}
 * Optional notes: ${input.notes || "None"}
 
 Return 3 highly relevant travel suggestions.
 
 Rules:
 
+* If the user gave a preferred destination, make the first suggestion that exact destination (or its immediate region), then offer 2 relevant alternatives.
 * Prefer realistic Indian travel destinations unless the user clearly asks for international travel.
 * Keep the suggestions practical for the given budget.
 * Consider travel time from the starting city.
@@ -413,10 +415,34 @@ function buildMockItinerary(
 }
 
 export function generateMockSuggestions(input: TripFormValues): TripSuggestion[] {
-  const pool =
+  const terrainPool =
     input.terrain === "Any"
       ? ALL_MOCK_DESTINATIONS
       : MOCK_DESTINATIONS_BY_TERRAIN[input.terrain] ?? ALL_MOCK_DESTINATIONS;
+
+  // If the user named a destination, lead with it. Reuse our curated data
+  // when we recognise the place, otherwise build a sensible generic entry.
+  let pool = terrainPool;
+  const wanted = input.destination?.trim();
+  if (wanted) {
+    const known = ALL_MOCK_DESTINATIONS.find(
+      (d) => d.destination.toLowerCase() === wanted.toLowerCase()
+    );
+    const requested: MockDestination = known ?? {
+      destination: wanted,
+      bestTime: "Year-round (check local weather)",
+      highlights: [
+        `Explore the highlights of ${wanted}`,
+        `Try the local food scene in ${wanted}`,
+        `Visit the most popular landmarks near ${wanted}`,
+        `Relax and soak in the atmosphere of ${wanted}`,
+      ],
+    };
+    const rest = terrainPool.filter(
+      (d) => d.destination.toLowerCase() !== wanted.toLowerCase()
+    );
+    pool = [requested, ...rest];
+  }
 
   const days = dayCount(input.startDate, input.endDate);
   const duration = `${days} day${days === 1 ? "" : "s"}`;

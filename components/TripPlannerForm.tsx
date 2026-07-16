@@ -79,6 +79,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
   const [terrain, setTerrain] = useState<Terrain>("Any");
   const [budget, setBudget] = useState("");
   const [startingCity, setStartingCity] = useState("");
+  const [destination, setDestination] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -116,6 +117,7 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
       terrain,
       budget: Number(budget),
       startingCity,
+      destination: destination.trim() || undefined,
       notes: notes || undefined,
     });
   }
@@ -214,6 +216,21 @@ export default function TripPlannerForm({ onSubmit, loading }: Props) {
             </button>
           ))}
         </div>
+      </Field>
+
+      <Field
+        id="destination"
+        label="Dream destination"
+        icon={<MapPin className="h-4 w-4" />}
+        helper="Optional — leave blank and we'll suggest places for you"
+      >
+        <CityAutocomplete
+          id="destination"
+          placeholder="e.g. Goa (optional)"
+          value={destination}
+          onChange={setDestination}
+          className={inputClass}
+        />
       </Field>
 
       <Field id="notes" label="Anything specific you want?" helper="Optional">
