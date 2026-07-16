@@ -95,11 +95,19 @@ export async function POST(request: Request) {
     );
   }
 
-  try {
-    const suggestions = process.env.OPENAI_API_KEY
-      ? await generateWithOpenAI(input)
-      : generateMockSuggestions(input);
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const suggestions = await generateWithOpenAI(input);
+      return NextResponse.json({ suggestions });
+    } catch (error) {
+      // OpenAI can fail (quota exhausted, network, malformed response).
+      // Fall back to the built-in mock generator so the app stays usable.
+      console.error("OpenAI generation failed, falling back to mock:", error);
+    }
+  }
 
+  try {
+    const suggestions = generateMockSuggestions(input);
     return NextResponse.json({ suggestions });
   } catch {
     return NextResponse.json(
